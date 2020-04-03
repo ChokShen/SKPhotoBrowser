@@ -33,6 +33,7 @@ open class SKPhotoBrowser: UIViewController {
     // actions
     fileprivate var activityViewController: UIActivityViewController!
     fileprivate var panGesture: UIPanGestureRecognizer?
+    fileprivate var longGesture: UILongPressGestureRecognizer?
 
     // for status check property
     fileprivate var isEndAnimationByToolBar: Bool = true
@@ -207,6 +208,9 @@ open class SKPhotoBrowser: UIViewController {
         cancelControlHiding()
         if let panGesture = panGesture {
             view.removeGestureRecognizer(panGesture)
+        }
+        if let longGesture = longGesture {
+            view.removeGestureRecognizer(longGesture)
         }
         NSObject.cancelPreviousPerformRequests(withTarget: self)
     }
@@ -534,6 +538,34 @@ internal extension SKPhotoBrowser {
     }
 }
 
+// MARK: - Public Function
+public extension SKPhotoBrowser {
+    @objc func longGestureRecognized(_ gestute: UILongPressGestureRecognizer) {
+        if gestute.state == .began {
+            let photo = photos[currentPageIndex]
+            guard let underlyingImage = photo.underlyingImage else {
+                return
+            }
+            savePhotoToAlbum(underlyingImage)
+        }
+    }
+    
+    @objc func savePhotoToAlbum(_ image: UIImage) {
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.saveImage(image:didFinishSavingWithError:contextInfo:)), nil)
+    }
+    
+    @objc func saveImage(image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: AnyObject) {
+        var showMessage = ""
+        if error != nil{
+            showMessage = "save failure"
+        } else {
+            showMessage = "save success"
+        }
+        print(showMessage)
+    }
+
+}
+
 // MARK: - Private Function
 private extension SKPhotoBrowser {
     func configureAppearance() {
@@ -560,6 +592,13 @@ private extension SKPhotoBrowser {
 
         if let panGesture = panGesture {
             view.addGestureRecognizer(panGesture)
+        }
+        
+        // FIXME: - longGesture to save photo
+        longGesture = UILongPressGestureRecognizer(target: self, action: #selector(longGestureRecognized(_:)))
+        longGesture?.minimumPressDuration = 1
+        if let longGesture = longGesture {
+            view.addGestureRecognizer(longGesture)
         }
     }
     
