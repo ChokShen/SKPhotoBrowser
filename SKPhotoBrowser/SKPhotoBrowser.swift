@@ -265,6 +265,31 @@ open class SKPhotoBrowser: UIViewController {
             present(activityViewController, animated: true, completion: nil)
         }
     }
+    
+    // MARK: - save photo to album
+    @objc func longGestureRecognized(_ gestute: UILongPressGestureRecognizer) {
+        if gestute.state == .began {
+            let photo = photos[currentPageIndex]
+            guard let underlyingImage = photo.underlyingImage else {
+                return
+            }
+            savePhotoToAlbum(underlyingImage)
+        }
+    }
+    
+    open func savePhotoToAlbum(_ image: UIImage) {
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.saveImage(image:didFinishSavingWithError:contextInfo:)), nil)
+    }
+    
+    @objc func saveImage(image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: AnyObject) {
+        var showMessage = ""
+        if error != nil{
+            showMessage = "save failure"
+        } else {
+            showMessage = "save success"
+        }
+        print(showMessage)
+    }
 }
 
 // MARK: - Public Function For Customizing Buttons
@@ -536,34 +561,6 @@ internal extension SKPhotoBrowser {
             dismissPhotoBrowser(animated: true)
         }
     }
-}
-
-// MARK: - Public Function
-public extension SKPhotoBrowser {
-    @objc func longGestureRecognized(_ gestute: UILongPressGestureRecognizer) {
-        if gestute.state == .began {
-            let photo = photos[currentPageIndex]
-            guard let underlyingImage = photo.underlyingImage else {
-                return
-            }
-            savePhotoToAlbum(underlyingImage)
-        }
-    }
-    
-    @objc func savePhotoToAlbum(_ image: UIImage) {
-        UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.saveImage(image:didFinishSavingWithError:contextInfo:)), nil)
-    }
-    
-    @objc func saveImage(image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: AnyObject) {
-        var showMessage = ""
-        if error != nil{
-            showMessage = "save failure"
-        } else {
-            showMessage = "save success"
-        }
-        print(showMessage)
-    }
-
 }
 
 // MARK: - Private Function
